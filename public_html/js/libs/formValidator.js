@@ -1,182 +1,203 @@
 (function($) {
-    $.fn.extend({
-        formValidator: function(options) {
-            var self = this;
+	$.fn
+			.extend({
+				formValidator : function(options) {
 
-            this.defaults = {
-                formElements: {
-                    name: {
-                        rules: {
-                            errorText: 'Hibás mező!',
-                            uppercase: true,
-                            emptyValue: '',
-                            passing: false
-                        },
-                        checkFunction: function(value, rules, elId) {
+					this.defaults = {
+						formElements : {
+							name : {
+								rules : {
+									errorText : 'Hibás mező!',
+									uppercase : true,
+									emptyValue : '',
+									passing : false
+								},
+								checkFunction : function(value, rules, elId,
+										self) {
 
-                            if (value === rules.emptyValue) {
-                                rules.passing = false;
-                            } else {
-                                rules.passing = true;
-                            }
+									if (value === rules.emptyValue) {
+										rules.passing = false;
+									} else {
+										rules.passing = true;
+									}
 
-                            if (rules.passing === false) {
-                                self.showErrorNotify(elId, rules.errorText);
-                            }
-                        }
-                    },
-                    mail: {
-                        rules: {
-                            errorText: 'Hibás e-mail!',
-                            emptyValue: '',
-                            passing: false
-                        },
-                        checkFunction: function(value, rules, elId) {
+									if (rules.passing === false) {
+										self.showErrorNotify(elId,
+												rules.errorText);
+									}
+								}
+							},
+							mail : {
+								rules : {
+									errorText : 'Hibás e-mail!',
+									emptyValue : '',
+									passing : false
+								},
+								checkFunction : function(value, rules, elId,
+										self) {
 
-                            if (value === rules.emptyValue) {
-                                rules.passing = false;
-                            } else {
-                                rules.passing = true;
-                            }
+									if (value === rules.emptyValue) {
+										rules.passing = false;
+									} else {
+										rules.passing = true;
+									}
 
-                            if (rules.passing === false) {
-                                self.showErrorNotify(elId, rules.errorText);
-                            }
-                        }
-                    }
-                }
-            };
+									if (rules.passing === false) {
+										self.showErrorNotify(elId,
+												rules.errorText);
+									}
+								}
+							}
+						}
+					};
 
-            this.init = function(opt) {
-                self.element = $(this);
+					this.plugin = {
+						el : undefined,
+						options : undefined,
+						elements : undefined,
+						errorTextEl : undefined,
+						formElements : new Array(),
 
-                self.elements = opt.formElements;
-                self.errorTextEl = undefined;
+						initialize : function() {
+							this.el = arguments[0];
+							this.options = arguments[1];
 
-                self.formElements = new Array();
+							this.elements = this.options.formElements;
 
-                for (var i in opt.formElements) {
-                    self.formElements.push($('#' + i));
-                }
+							for ( var i in this.elements) {
+								this.formElements.push($('#' + i));
+							}
 
-                self.addEvents();
-            };
+							this.addEvents();
+						},
 
-            this.showErrorNotify = function(elements, errorText) {
-                if (typeof(elements) === 'object') {
-                    for (var i = 0; i <= elements.length - 1; i++) {
-                        var el = elements[i].el,
-                                text = elements[i].errorText;
+						showErrorNotify : function(elements, errorText) {
+							if (typeof (elements) === 'object') {
+								for ( var i = 0; i <= elements.length - 1; i++) {
+									var el = elements[i].el, text = elements[i].errorText;
 
-                        self.setErrorTextHtml(el, text);
-                    }
-                } else {
-                    var el = $('#' + elements);
-                    
-                    self.setErrorTextHtml(el, errorText);
-                }
-            };
+									this.setErrorTextHtml(el, text);
+								}
+							} else {
+								var el = $('#' + elements);
 
-            this.setErrorTextHtml = function(el, text) {
-                el.after('<span class="error-text">' + text + '</span>');
-                self.errorTextEl = $('.error-text');
+								this.setErrorTextHtml(el, errorText);
+							}
+						},
 
-                self.errorTextEl.animate({
-                    opacity: 1
-                });
-            };
+						setErrorTextHtml : function(el, text) {
+							el.after('<span class="error-text">' + text
+									+ '</span>');
+							this.errorTextEl = $('.error-text');
 
-            this.formEvents = function() {
-                self.element.on({
-                    'submit': function(e) {
+							this.errorTextEl.animate({
+								opacity : 1
+							});
+						},
 
-                        if ($(this).find('.error-text').size() > 0) {
-                            return false;
-                        }
+						formEvents : function() {
+							this.el.on({
+								'submit' : this.formSubmit,
+								'checking' : this.formChecking
+							}, {
+								self : this
+							});
+						},
 
-                        var isShowSendError = false,
-                                errorElements = new Array();
+						formSubmit : function(e) {
+							if ($(this).find('.error-text').size() > 0) {
+								return false;
+							}
 
-                        try {
-                            for (var i in self.elements) {
-                                if (self.elements[i].rules.passing === false) {
-                                    isShowSendError = true;
-                                    errorElements.push({
-                                        el: $("#" + i),
-                                        errorText: self.elements[i].rules.errorText
-                                    });
-                                }
-                            }
-                        } catch (error) {
-                            console.info(error);
-                        }
+							var isShowSendError = false, errorElements = new Array(), elements = e.data.self.elements;
 
-                        if (isShowSendError) {
-                            self.showErrorNotify(errorElements);
-                            return false;
-                        }
+							try {
+								for ( var i in elements) {
+									if (elements[i].rules.passing === false) {
+										isShowSendError = true;
+										errorElements
+												.push({
+													el : $("#" + i),
+													errorText : elements[i].rules.errorText
+												});
+									}
+								}
+							} catch (error) {
+								console.info(error);
+							}
 
-                    },
-                    'checking': function(el, dataObj) {
-                        var elObj = self.elements[dataObj.id];
+							if (isShowSendError) {
+								e.data.self.showErrorNotify(errorElements);
+								return false;
+							}
+						},
 
-                        try {
-                            elObj.checkFunction(dataObj.value, elObj.rules, dataObj.id);
-                        } catch (error) {
-                            console.info(error.message);
-                        }
-                        ;
+						formChecking : function(e, dataObj) {
+							var elements = e.data.self.elements, elObj = elements[dataObj.id];
 
-                    }
-                });
-            };
+							try {
+								elObj.checkFunction(dataObj.value, elObj.rules,
+										dataObj.id, e.data.self);
+							} catch (error) {
+								console.info(error.message);
+							}
+							;
+						},
 
-            this.formElementsEvent = function() {
-                for (var i = 0; i <= self.formElements.length - 1; i++) {
-                    self.formElements[i].on({
-                        focus: function() {
-                            var textContainer = $(this).next()[0];
+						formElementsEvent : function() {
+							for ( var i = 0; i <= this.formElements.length - 1; i++) {
+								this.formElements[i].on({
+									focus : this.focusEvent,
+									blur : this.blurEvent
+								}, {
+									self : this
+								});
+							}
+						},
 
-                            if (textContainer !== undefined) {
-                                $(textContainer).animate({
-                                    opacity: 0,
-                                    marginLeft: '100px'
-                                }, function() {
-                                    $(this).remove();
-                                });
-                            }
-                        },
-                        blur: function() {
-                            var value = $(this).val(),
-                                    id = $(this).attr('id');
+						focusEvent : function(e) {
+							var textContainer = $(this).next()[0];
 
-                            var dataObj = {
-                                value: value,
-                                id: id
-                            };
+							if (textContainer !== undefined) {
+								$(textContainer).animate({
+									opacity : 0,
+									marginLeft : '100px'
+								}, function() {
+									$(this).remove();
+								});
+							}
+						},
 
-                            self.element.trigger('checking', dataObj);
-                        }
-                    });
-                }
-            };
+						blurEvent : function(e) {
+							var value = $(this).val(), id = $(this).attr('id'), el = e.data.self.el;
 
-            this.addEvents = function() {
-                self.formEvents();
-                self.formElementsEvent();
-            };
+							var dataObj = {
+								value : value,
+								id : id
+							};
 
-            this.removeEvents = function() {
+							el.trigger('checking', dataObj);
+						},
 
-            };
+						addEvents : function() {
+							this.formEvents();
+							this.formElementsEvent();
+						},
 
-            constructor = function() {
-                self.options = $.extend(self.defaults, options);
-                self.init(self.options);
-            }();
+						removeEvents : function() {
 
-        }
-    });
+						}
+					};
+
+					this.init = function(opt) {
+						$.proxy(this.plugin.initialize(this, opt), this.plugin);
+					};
+
+					constructor = function(plugin) {
+						plugin.options = $.extend(plugin.defaults, options);
+						plugin.init(plugin.options);
+					}(this);
+
+				}
+			});
 })(jQuery);
-
-
