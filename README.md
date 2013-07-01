@@ -1,7 +1,7 @@
 formValidator
 =============
-<p>This a new formvalidator Jquery Plugin.<br/>
-It has a simple configuration, fast plugin and compatible the all modern browser.</p>
+<p>This is a new formvalidator jQuery Plugin.<br/>
+It has a simple and customizable configuration, fast plugin and compatible the all modern browser.</p>
 
 <div>
 <h3>
