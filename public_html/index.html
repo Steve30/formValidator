@@ -39,40 +39,42 @@ and open the template in the editor.
 					formElements : {
 						name : {
 							rules : {
-								errorText : 'Hibás mező!',
+								errorText : 'Wrong field!',
 								uppercase : true,
 								emptyValue : '',
 								passing : false
 							},
-							checkFunction : function(value, rules, elId, self) {
+							checkFunction : function(value, rules) {
 
 								if (value === rules.emptyValue) {
 									rules.passing = false;
 								} else {
 									rules.passing = true;
 								}
-
+								
+								// It must be use, if the passing is false
 								if (rules.passing === false) {
-									self.showErrorNotify(elId, rules.errorText);
+									return rules.passing;
 								}
 							}
 						},
 						mail : {
 							rules : {
-								errorText : 'Hibás e-mail!',
+								errorText : 'Wrong e-mail!',
 								emptyValue : '',
 								passing : false
 							},
-							checkFunction : function(value, rules, elId, self) {
+							checkFunction : function(value, rules) {
 
 								if (value === rules.emptyValue) {
 									rules.passing = false;
 								} else {
 									rules.passing = true;
 								}
-
+								
+								// It must be use, if the passing is false
 								if (rules.passing === false) {
-									self.showErrorNotify(elId, rules.errorText);
+									return rules.passing;
 								}
 							}
 						}

@@ -12,8 +12,7 @@
 									emptyValue : '',
 									passing : false
 								},
-								checkFunction : function(value, rules, elId,
-										self) {
+								checkFunction : function(value, rules) {
 
 									if (value === rules.emptyValue) {
 										rules.passing = false;
@@ -22,8 +21,7 @@
 									}
 
 									if (rules.passing === false) {
-										self.showErrorNotify(elId,
-												rules.errorText);
+										return rules.passing;
 									}
 								}
 							},
@@ -33,8 +31,7 @@
 									emptyValue : '',
 									passing : false
 								},
-								checkFunction : function(value, rules, elId,
-										self) {
+								checkFunction : function(value, rules) {
 
 									if (value === rules.emptyValue) {
 										rules.passing = false;
@@ -43,8 +40,7 @@
 									}
 
 									if (rules.passing === false) {
-										self.showErrorNotify(elId,
-												rules.errorText);
+										return rules.passing;
 									}
 								}
 							}
@@ -57,7 +53,8 @@
 						elements : undefined,
 						errorTextEl : undefined,
 						formElements : new Array(),
-
+						
+						/* Init function. initialize the plugin */
 						initialize : function() {
 							this.el = arguments[0];
 							this.options = arguments[1];
@@ -70,7 +67,13 @@
 
 							this.addEvents();
 						},
-
+						/**
+						 *	Show the error notification
+						 *	@param elements object or string   object or DOM id	
+						 *  @param errorText   string    Notify text
+						 *  
+						 *  @return void; 
+						 */
 						showErrorNotify : function(elements, errorText) {
 							if (typeof (elements) === 'object') {
 								for ( var i = 0; i <= elements.length - 1; i++) {
@@ -84,7 +87,13 @@
 								this.setErrorTextHtml(el, errorText);
 							}
 						},
-
+						/**
+						 *	Set the error text
+						 *	@param el 		object    HTML Dom element	
+						 *  @param text 	string    Errot notify text
+						 *  
+						 *  @return void; 
+						 */
 						setErrorTextHtml : function(el, text) {
 							el.after('<span class="error-text">' + text
 									+ '</span>');
@@ -94,7 +103,11 @@
 								opacity : 1
 							});
 						},
-
+						/**
+						 *	Set the form events
+						 *  
+						 *  @return void; 
+						 */
 						formEvents : function() {
 							this.el.on({
 								'submit' : this.formSubmit,
@@ -103,7 +116,11 @@
 								self : this
 							});
 						},
-
+						/**
+						 *	Form submit event function
+						 *  
+						 *  @return false or empty; 
+						 */
 						formSubmit : function(e) {
 							if ($(this).find('.error-text').size() > 0) {
 								return false;
@@ -131,19 +148,33 @@
 								return false;
 							}
 						},
-
+						/**
+						 *	Custom form checking event function
+						 *
+						 *  @param dataObj   object    Data object
+						 *  
+						 *  @return void; 
+						 */
 						formChecking : function(e, dataObj) {
 							var elements = e.data.self.elements, elObj = elements[dataObj.id];
 
 							try {
-								elObj.checkFunction(dataObj.value, elObj.rules,
-										dataObj.id, e.data.self);
+								var check = elObj.checkFunction(dataObj.value, elObj.rules);
+								
+								if (check === false) {
+									e.data.self.showErrorNotify(dataObj.id, elObj.rules.errorText)
+								}
+								
 							} catch (error) {
 								console.info(error.message);
 							}
 							;
 						},
-
+						/**
+						 *	Form elements event function
+						 *  
+						 *  @return void; 
+						 */
 						formElementsEvent : function() {
 							for ( var i = 0; i <= this.formElements.length - 1; i++) {
 								this.formElements[i].on({
@@ -154,7 +185,11 @@
 								});
 							}
 						},
-
+						/**
+						 *	Focus event function
+						 *  
+						 *  @return void; 
+						 */
 						focusEvent : function(e) {
 							var textContainer = $(this).next()[0];
 
@@ -167,7 +202,11 @@
 								});
 							}
 						},
-
+						/**
+						 *	Blur event function
+						 *  
+						 *  @return void; 
+						 */
 						blurEvent : function(e) {
 							var value = $(this).val(), id = $(this).attr('id'), el = e.data.self.el;
 
@@ -178,21 +217,27 @@
 
 							el.trigger('checking', dataObj);
 						},
-
+						/**
+						 *	Add plugin events
+						 *  
+						 *  @return void; 
+						 */
 						addEvents : function() {
 							this.formEvents();
 							this.formElementsEvent();
 						},
-
-						removeEvents : function() {
-
-						}
 					};
-
+					
+					/**
+					 * Init the plugin object 
+					 */
 					this.init = function(opt) {
 						$.proxy(this.plugin.initialize(this, opt), this.plugin);
 					};
-
+					
+					/**
+					 * Merge the plugin options and run the init function
+					 */
 					constructor = function(plugin) {
 						plugin.options = $.extend(plugin.defaults, options);
 						plugin.init(plugin.options);
